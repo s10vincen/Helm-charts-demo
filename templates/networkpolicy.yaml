@@ -1,0 +1,100 @@
+{{- if .Values.networkPolicy.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-deny-all
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/name: kubecost
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-allow-oauth2-and-monitoring
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/name: kubecost
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  podSelector:
+    matchLabels:
+      app: cost-analyzer
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        {{- if .Values.networkPolicy.oauth2Proxy.namespace }}
+        - namespaceSelector:
+            matchLabels:
+              {{- range $k, $v := .Values.networkPolicy.oauth2Proxy.namespaceLabels }}
+              {{ $k }}: {{ $v | quote }}
+              {{- end }}
+        {{- end }}
+        - podSelector:
+            matchLabels:
+              app: oauth2-proxy
+        {{- if .Values.networkPolicy.prometheus.namespace }}
+        - namespaceSelector:
+            matchLabels:
+              {{- range $k, $v := .Values.networkPolicy.prometheus.namespaceLabels }}
+              {{ $k }}: {{ $v | quote }}
+              {{- end }}
+        {{- end }}
+  egress:
+    {{- if .Values.networkPolicy.prometheus.enabled }}
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              {{- range $k, $v := .Values.networkPolicy.prometheus.namespaceLabels }}
+              {{ $k }}: {{ $v | quote }}
+              {{- end }}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.networkPolicy.prometheus.port }}
+    {{- end }}
+    {{- if .Values.networkPolicy.metricsServer.enabled }}
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              {{- range $k, $v := .Values.networkPolicy.metricsServer.namespaceLabels }}
+              {{ $k }}: {{ $v | quote }}
+              {{- end }}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.networkPolicy.metricsServer.port }}
+    {{- end }}
+    {{- range .Values.networkPolicy.extraEgress }}
+    - to:
+        {{- if .ipBlock }}
+        - ipBlock:
+            cidr: {{ .ipBlock.cidr | quote }}
+            {{- if .ipBlock.except }}
+            except:
+            {{- range .ipBlock.except }}
+              - {{ . | quote }}
+            {{- end }}
+            {{- end }}
+        {{- end }}
+        {{- if .namespaceLabels }}
+        - namespaceSelector:
+            matchLabels:
+              {{- range $k, $v := .namespaceLabels }}
+              {{ $k }}: {{ $v | quote }}
+              {{- end }}
+        {{- end }}
+      {{- if .ports }}
+      ports:
+        {{- range .ports }}
+        - protocol: {{ .protocol | default "TCP" | quote }}
+          port: {{ .port }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+{{- end }}

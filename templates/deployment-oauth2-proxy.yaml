@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oauth2-proxy
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: oauth2-proxy
+  template:
+    metadata:
+      labels:
+        app: oauth2-proxy
+    spec:
+      containers:
+        - name: oauth2-proxy
+          image: {{ .Values.oauth2Proxy.image }}
+          args:
+            - --provider=oidc
+            - --http-address=0.0.0.0:4180
+            - --email-domain=*
+            - --upstream=http://cost-analyzer.{{ .Values.namespace }}.svc.cluster.local
+            - --cookie-secret={{ .Values.oauth2Proxy.cookieSecret }}
+            - --client-id={{ .Values.oauth2Proxy.clientID }}
+            - --client-secret={{ .Values.oauth2Proxy.clientSecret }}
+            - --redirect-url={{ .Values.oauth2Proxy.redirectURL }}
+            - --oidc-issuer-url={{ .Values.oauth2Proxy.oidcIssuerURL }}

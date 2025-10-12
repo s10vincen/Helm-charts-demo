@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cost-analyzer
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: cost-analyzer
+  template:
+    metadata:
+      labels:
+        app: cost-analyzer
+    spec:
+      serviceAccountName: kubecost
+      containers:
+        - name: cost-analyzer
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: 9001
+          envFrom:
+            - configMapRef:
+                name: kubecost-config
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}

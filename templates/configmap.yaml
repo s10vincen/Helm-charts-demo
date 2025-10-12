@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubecost-config
+  namespace: {{ .Values.namespace }}
+data:
+  PROMETHEUS_SERVER_ENDPOINT: {{ .Values.prometheus.endpoint | quote }}
+  CLUSTER_NAME: "primary-cluster"
+  ETL_ENABLED: "true"
+  ETL_HOURS: "24"
+  RIGHTSIZING_ENABLED: "true"
+  SAVINGS_ENABLED: "true"
+  AGGREGATION_ENABLED: "true"
+  COST_LABELS: {{ .Values.costLabels | quote }}

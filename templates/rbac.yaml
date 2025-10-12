@@ -1,0 +1,22 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: kubecost-namespace-admin
+  namespace: {{ .Values.namespace }}
+rules:
+  - apiGroups: ["*"]
+    resources: ["*"]
+    verbs: ["*"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: kubecost-namespace-admin-binding
+  namespace: {{ .Values.namespace }}
+subjects:
+  - kind: Group
+    name: {{ .Values.rbac.adminGroup }}
+roleRef:
+  kind: Role
+  name: kubecost-namespace-admin
+  apiGroup: rbac.authorization.k8s.io

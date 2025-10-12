@@ -1,0 +1,86 @@
+namespace: kubecost
+
+replicaCount: 2
+
+image:
+  repository: gcr.io/kubecost1/cost-analyzer
+  tag: latest
+  pullPolicy: IfNotPresent
+
+oauth2Proxy:
+  enabled: true
+  image: quay.io/oauth2-proxy/oauth2-proxy:v7.6.0
+  clientID: "YOUR_CLIENT_ID"
+  clientSecret: "YOUR_CLIENT_SECRET"
+  cookieSecret: "REPLACE_WITH_32_BYTE_RANDOM_BASE64"
+  oidcIssuerURL: "https://YOUR_OIDC_ISSUER"
+  redirectURL: "https://kubecost.YOUR_DOMAIN/oauth2/callback"
+
+ingress:
+  enabled: true
+  className: nginx
+  host: kubecost.YOUR_DOMAIN
+  tlsSecret: kubecost-tls
+  whitelistSourceRange: "10.0.0.0/8,192.168.0.0/16"
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    cpu: 1
+    memory: 2Gi
+
+prometheus:
+  endpoint: "http://prometheus-operated.monitoring:9090"
+
+costLabels: "app,team,env"
+
+rbac:
+  adminGroup: "platform-admins"
+
+networkPolicy:
+  enabled: true
+
+serviceAccount:
+  name: kubecost
+
+serviceMonitor:
+  enabled: true
+
+networkPolicy:
+  enabled: true
+
+  # OAuth2 Proxy allowance (same namespace by default)
+  oauth2Proxy:
+    namespaceLabels: {}  # leave empty for same-namespace podSelector match
+
+  # Prometheus allowance
+  prometheus:
+    enabled: true
+    namespaceLabels:
+      monitoring: "enabled"   # label your Prometheus namespace with this map
+    port: 9090
+
+  # metrics-server allowance
+  metricsServer:
+    enabled: true
+    namespaceLabels:
+      kube-system: "true"     # label or match your kube-system namespace
+    port: 4443               # adjust to your metrics-server port
+
+  # Optional additional egress rules
+  extraEgress: []
+  # - ipBlock:
+  #     cidr: "0.0.0.0/0"
+  #     except:
+  #       - "10.0.0.0/8"
+  #   ports:
+  #     - protocol: TCP
+  #       port: 443
+  # - namespaceLabels:
+  #     some-label: "value"
+  #   ports:
+  #     - protocol: TCP
+  #       port: 8080
+

@@ -1,0 +1,20 @@
+{{- if .Values.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: kubecost
+  namespace: {{ .Values.namespace }}
+  labels:
+    release: prometheus   # Adjust to match your Prometheus release label
+spec:
+  selector:
+    matchLabels:
+      app: cost-analyzer
+  namespaceSelector:
+    matchNames:
+      - {{ .Values.namespace }}
+  endpoints:
+    - port: http
+      interval: 30s
+      path: /metrics
+{{- end }}
