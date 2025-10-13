@@ -1,132 +1,207 @@
-# namespace: kubecost
+# # namespace: kubecost
 
-# replicaCount: 2
+# # replicaCount: 2
 
-# image:
-#   repository: gcr.io/kubecost1/cost-analyzer
-#   tag: latest
-#   pullPolicy: IfNotPresent
+# # image:
+# #   repository: gcr.io/kubecost1/cost-analyzer
+# #   tag: latest
+# #   pullPolicy: IfNotPresent
 
-# oauth2Proxy:
+# # oauth2Proxy:
+# #   enabled: true
+# #   image: quay.io/oauth2-proxy/oauth2-proxy:v7.6.0
+# #   clientID: "YOUR_CLIENT_ID"
+# #   clientSecret: "YOUR_CLIENT_SECRET"
+# #   cookieSecret: "REPLACE_WITH_32_BYTE_RANDOM_BASE64"
+# #   oidcIssuerURL: "https://YOUR_OIDC_ISSUER"
+# #   redirectURL: "https://kubecost.YOUR_DOMAIN/oauth2/callback"
+
+# # ingress:
+# #   enabled: true
+# #   className: nginx
+# #   host: kubecost.YOUR_DOMAIN
+# #   tlsSecret: kubecost-tls
+# #   whitelistSourceRange: "10.0.0.0/8,192.168.0.0/16"
+
+# # resources:
+# #   requests:
+# #     cpu: 250m
+# #     memory: 512Mi
+# #   limits:
+# #     cpu: 1
+# #     memory: 2Gi
+
+# # prometheus:
+# #   endpoint: "http://prometheus-operated.monitoring:9090"
+
+# # costLabels: "app,team,env"
+
+# # rbac:
+# #   adminGroup: "platform-admins"
+
+# # networkPolicy:
+# #   enabled: true
+
+# # serviceAccount:
+# #   name: kubecost
+
+# # serviceMonitor:
+# #   enabled: true
+
+# # networkPolicy:
+# #   enabled: true
+
+# #   # OAuth2 Proxy allowance (same namespace by default)
+# #   oauth2Proxy:
+# #     namespaceLabels: {}  # leave empty for same-namespace podSelector match
+
+# #   # Prometheus allowance
+# #   prometheus:
+# #     enabled: true
+# #     namespaceLabels:
+# #       monitoring: "enabled"   # label your Prometheus namespace with this map
+# #     port: 9090
+
+# #   # metrics-server allowance
+# #   metricsServer:
+# #     enabled: true
+# #     namespaceLabels:
+# #       kube-system: "true"     # label or match your kube-system namespace
+# #     port: 4443               # adjust to your metrics-server port
+
+# #   # Optional additional egress rules
+# #   extraEgress: []
+# #   # - ipBlock:
+# #   #     cidr: "0.0.0.0/0"
+# #   #     except:
+# #   #       - "10.0.0.0/8"
+# #   #   ports:
+# #   #     - protocol: TCP
+# #   #       port: 443
+# #   # - namespaceLabels:
+# #   #     some-label: "value"
+# #   #   ports:
+# #   #     - protocol: TCP
+# #   #       port: 8080
+
+# global:
+#   grafana:
+#     enabled: true          # Deploy bundled Grafana
+#     proxy: true            # Allow Kubecost to proxy it (default)
+#   prometheus:
+#     enabled: true          # recommanded to bundle Prometheus
+#     fqdn: ""               # Leave empty when using internal one
+
+# kubecostModel:
+#   replicas: 2
+#   resources:
+#     requests:
+#       cpu: 500m
+#       memory: 512Mi
+#     limits:
+#       cpu: 1
+#       memory: 1Gi
+
+# kubecostFrontend:
+#   replicas: 2
+#   resources:
+#     requests:
+#       cpu: 100m
+#       memory: 256Mi
+#     limits:
+#       cpu: 1
+#       memory: 512Mi
+
+# kubecostMetrics:
+#   exporter:
+#     enabled: true
+
+# autoscaling:
 #   enabled: true
-#   image: quay.io/oauth2-proxy/oauth2-proxy:v7.6.0
-#   clientID: "YOUR_CLIENT_ID"
-#   clientSecret: "YOUR_CLIENT_SECRET"
-#   cookieSecret: "REPLACE_WITH_32_BYTE_RANDOM_BASE64"
-#   oidcIssuerURL: "https://YOUR_OIDC_ISSUER"
-#   redirectURL: "https://kubecost.YOUR_DOMAIN/oauth2/callback"
+#   minReplicas: 2
+#   maxReplicas: 5
+#   targetCPUUtilizationPercentage: 75
 
-# ingress:
+# persistentVolume:
 #   enabled: true
-#   className: nginx
-#   host: kubecost.YOUR_DOMAIN
-#   tlsSecret: kubecost-tls
-#   whitelistSourceRange: "10.0.0.0/8,192.168.0.0/16"
+#   size: 50Gi
+#   storageClass: standard-rwo
 
-# resources:
-#   requests:
-#     cpu: 250m
-#     memory: 512Mi
-#   limits:
-#     cpu: 1
-#     memory: 2Gi
+# customPricing:
+#   enabled: true
+#   config:
+#     description: "Custom internal pricing"
+#     CPU: "0.031611"
+#     RAM: "0.004237"
 
-# prometheus:
-#   endpoint: "http://prometheus-operated.monitoring:9090"
+# aggregator:
+#   customAggregations:
+#     team: "team"
+#     environment: "environment"
+#     owner: "owner"
 
-# costLabels: "app,team,env"
-
-# rbac:
-#   adminGroup: "platform-admins"
+# kubecostProductConfigs:
+#   sharedNamespaces:
+#     - kube-system
+#     - monitoring
+#   sharedNamespaceCostAllocation:
+#     - team: platform
+#       percentage: 100
 
 # networkPolicy:
 #   enabled: true
 
 # serviceAccount:
-#   name: kubecost
+#   create: true
 
-# serviceMonitor:
-#   enabled: true
+# rbac:
+#   create: true
 
-# networkPolicy:
-#   enabled: true
-
-#   # OAuth2 Proxy allowance (same namespace by default)
-#   oauth2Proxy:
-#     namespaceLabels: {}  # leave empty for same-namespace podSelector match
-
-#   # Prometheus allowance
-#   prometheus:
-#     enabled: true
-#     namespaceLabels:
-#       monitoring: "enabled"   # label your Prometheus namespace with this map
-#     port: 9090
-
-#   # metrics-server allowance
-#   metricsServer:
-#     enabled: true
-#     namespaceLabels:
-#       kube-system: "true"     # label or match your kube-system namespace
-#     port: 4443               # adjust to your metrics-server port
-
-#   # Optional additional egress rules
-#   extraEgress: []
-#   # - ipBlock:
-#   #     cidr: "0.0.0.0/0"
-#   #     except:
-#   #       - "10.0.0.0/8"
-#   #   ports:
-#   #     - protocol: TCP
-#   #       port: 443
-#   # - namespaceLabels:
-#   #     some-label: "value"
-#   #   ports:
-#   #     - protocol: TCP
-#   #       port: 8080
 
 global:
   grafana:
     enabled: true          # Deploy bundled Grafana
-    proxy: true            # Allow Kubecost to proxy it (default)
+    proxy: true            # Allow Kubecost to proxy it
   prometheus:
-    enabled: true          # recommanded to bundle Prometheus
+    enabled: true          # Bundle Prometheus for simplicity
     fqdn: ""               # Leave empty when using internal one
 
+# Core Kubecost model (backend)
 kubecostModel:
-  replicas: 2
-  resources:
-    requests:
-      cpu: 500m
-      memory: 512Mi
-    limits:
-      cpu: 1
-      memory: 1Gi
-
-kubecostFrontend:
-  replicas: 2
+  replicas: 1              # reduce for kind cluster
   resources:
     requests:
       cpu: 100m
       memory: 256Mi
     limits:
-      cpu: 1
+      cpu: 500m
       memory: 512Mi
 
+# Kubecost frontend (UI)
+kubecostFrontend:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+
+# Metrics exporter
 kubecostMetrics:
   exporter:
     enabled: true
 
+# Horizontal Pod Autoscaler (optional in dev)
 autoscaling:
-  enabled: true
-  minReplicas: 2
-  maxReplicas: 5
-  targetCPUUtilizationPercentage: 75
+  enabled: false
 
+# Persistence (disabled for kind to avoid PVC issues)
 persistentVolume:
-  enabled: true
-  size: 50Gi
-  storageClass: standard-rwo
+  enabled: false
 
+# Example custom pricing
 customPricing:
   enabled: true
   config:
@@ -134,12 +209,14 @@ customPricing:
     CPU: "0.031611"
     RAM: "0.004237"
 
+# Aggregation labels
 aggregator:
   customAggregations:
     team: "team"
     environment: "environment"
     owner: "owner"
 
+# Product configs
 kubecostProductConfigs:
   sharedNamespaces:
     - kube-system
@@ -148,9 +225,11 @@ kubecostProductConfigs:
     - team: platform
       percentage: 100
 
+# Network policy
 networkPolicy:
-  enabled: true
+  enabled: false   # disable in dev to avoid blocking traffic
 
+# Service account & RBAC
 serviceAccount:
   create: true
 
