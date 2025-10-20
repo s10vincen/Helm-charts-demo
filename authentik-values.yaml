@@ -1,0 +1,15 @@
+server:
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    hosts:
+      - authentik.vinflowtech.com
+    tls:
+      - hosts:
+          - authentik.vinflowtech.com
+        secretName: authentik-tls
+certificates:
+  enabled: true
+  issuerRef:
+    name: selfsigned
+    kind: ClusterIssuer
